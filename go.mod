@@ -53,7 +53,7 @@ require (
 	github.com/cosmos/ledger-go v0.9.2 // indirect
 	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/deckarep/golang-set v1.7.1 // indirect
+	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.3 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
@@ -68,7 +68,6 @@ require (
 	github.com/go-kit/log v0.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
-	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
@@ -92,7 +91,7 @@ require (
 	github.com/huin/goupnp v1.0.2 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458 // indirect
+	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
@@ -153,6 +152,8 @@ require (
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
+	github.com/ethereum/go-ethereum => ../../ethereum/go-ethereum
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/tharsis/ethermint => ../ethermint
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
