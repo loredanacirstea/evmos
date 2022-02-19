@@ -102,7 +102,8 @@ import (
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
 	v2 "github.com/tharsis/evmos/v2/app/upgrades/v2"
 
-	vmibc "github.com/tharsis/ethermint/x/evm/vm/keeper"
+	vmibc "github.com/tharsis/ethermint/x/evm/vm"
+	vmibckeeper "github.com/tharsis/ethermint/x/evm/vm/keeper"
 	vmibctypes "github.com/tharsis/ethermint/x/evm/vm/types"
 
 	"github.com/tharsis/ethermint/x/feemarket"
@@ -394,13 +395,13 @@ func NewEvmos(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
-	VmIbcKeeper := vmibc.NewKeeper(
+	VmIbcKeeper := vmibckeeper.NewKeeper(
 		appCodec,
 		keys[vmibctypes.StoreKey],
 		app.GetSubspace(vmibctypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		scopedVmIbcKeeper,
-		// &app.IBCKeeper.PortKeeper,
+		&app.IBCKeeper.PortKeeper,
 	)
 
 	// Create Ethermint keepers
@@ -498,12 +499,15 @@ func NewEvmos(
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
+
 	// transfer stack contains: Airdrop Claim Middleware -> Transfer -> SendPacket
 	transferStack := claims.NewIBCModule(app.ClaimsKeeper, transfer.NewIBCModule(app.TransferKeeper))
+	vmIBCModule := vmibc.NewIBCModule(VmIbcKeeper, transfer.NewIBCModule(app.TransferKeeper))
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
+	ibcRouter.AddRoute(vmibctypes.ModuleName, vmIBCModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// create evidence keeper with router
@@ -554,6 +558,7 @@ func NewEvmos(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		claims.NewAppModule(appCodec, app.ClaimsKeeper),
 		vesting.NewAppModule(app.VestingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		// vmibc.NewAppModule(app.VmIbcKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
