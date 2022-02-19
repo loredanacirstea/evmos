@@ -102,6 +102,9 @@ import (
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
 	v2 "github.com/tharsis/evmos/v2/app/upgrades/v2"
 
+	vmibc "github.com/tharsis/ethermint/x/evm/vm/keeper"
+	vmibctypes "github.com/tharsis/ethermint/x/evm/vm/types"
+
 	"github.com/tharsis/ethermint/x/feemarket"
 	feemarketkeeper "github.com/tharsis/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
@@ -320,6 +323,7 @@ func NewEvmos(
 		// evmos keys
 		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
+		vmibctypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -347,6 +351,7 @@ func NewEvmos(
 
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedVmIbcKeeper := app.CapabilityKeeper.ScopeToModule(vmibctypes.ModuleName)
 
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
 	// their scoped modules in `NewApp` with `ScopeToModule`
@@ -384,16 +389,26 @@ func NewEvmos(
 		appCodec, keys[feemarkettypes.StoreKey], app.GetSubspace(feemarkettypes.ModuleName),
 	)
 
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+	)
+
+	VmIbcKeeper := vmibc.NewKeeper(
+		appCodec,
+		keys[vmibctypes.StoreKey],
+		app.GetSubspace(vmibctypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		scopedVmIbcKeeper,
+		// &app.IBCKeeper.PortKeeper,
+	)
+
 	// Create Ethermint keepers
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper,
+		VmIbcKeeper,
 		tracer,
-	)
-
-	// Create IBC Keeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
 	// register the proposal types

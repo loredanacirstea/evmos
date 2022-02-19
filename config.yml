@@ -3,11 +3,17 @@ accounts:
     coins: ["100000000uatom", "100000000000000000000aevmos"]
   - name: bob
     coins: ["5000000000000aevmos"]
+  # - name: relayer
+  #   address: "evmos1jmghmexanv84dj826gp24l7nfhm2zmrd8987cq"
+  #   coins: ["200000000stake", "100000000uatom", "10000000000000000aevmos"]
+  # - name: local
+  #   address: "evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp"
+  #   coins: ["100000000uatom", "10000000000000000aevmos"]
 validator:
   name: alice
   staked: "100000000000000000000aevmos"
 faucet:
-  name: bob 
+  name: bob
   coins: ["10aevmos"]
 build:
   binary: "evmosd"
@@ -37,3 +43,5 @@ genesis:
     evm:
       params:
         evm_denom: "aevmos"
+host:
+  rpc: ":26657"

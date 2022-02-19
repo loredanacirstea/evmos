@@ -1,4 +1,7 @@
-
+RELAYER="evmos1jmghmexanv84dj826gp24l7nfhm2zmrd8987cq"
+LOCALKEY="evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp"
+# LOCALKEY2="evmos1g2wzln2mpy8mxwdd5ds06w6wneqycsvgvpwkcw"
+LOCALKEY2="evmos1f3d3t8y604x9ev4dfgf4hx270gdcrfal2m0hr3"
 KEY="mykey"
 CHAINID="evmos_9000-1"
 MONIKER="localtestnet"
@@ -17,14 +20,14 @@ rm -rf ~/.evmosd*
 
 make install
 
-evmosd config keyring-backend $KEYRING
-evmosd config chain-id $CHAINID
+~/go/bin/evmosd config keyring-backend $KEYRING
+~/go/bin/evmosd config chain-id $CHAINID
 
 # if $KEY exists it should be deleted
-evmosd keys add $KEY --keyring-backend $KEYRING --algo $KEYALGO
+~/go/bin/evmosd keys add $KEY --keyring-backend $KEYRING --algo $KEYALGO
 
 # Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
-evmosd init $MONIKER --chain-id $CHAINID
+~/go/bin/evmosd init $MONIKER --chain-id $CHAINID
 
 # Change parameter token denominations to aevmos
 cat $HOME/.evmosd/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aevmos"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
@@ -40,7 +43,7 @@ cat $HOME/.evmosd/config/genesis.json | jq '.consensus_params["block"]["time_iot
 cat $HOME/.evmosd/config/genesis.json | jq '.consensus_params["block"]["max_gas"]="10000000"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
 # Get close date
-node_address=$(evmosd keys list | grep  "address: " | cut -c12-)
+node_address=$(~/go/bin/evmosd keys list | grep  "address: " | cut -c12-)
 current_date=$(date -u +"%Y-%m-%dT%TZ")
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 # Add account to claims
@@ -86,27 +89,40 @@ if [[ $1 == "pending" ]]; then
 fi
 
 # Allocate genesis accounts (cosmos formatted addresses)
-evmosd add-genesis-account $KEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys delete $RELAYER  --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys delete $LOCALKEY  --keyring-backend $KEYRING
+
+~/go/bin/evmosd add-genesis-account $KEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $KEY 200000000stake --keyring-backend $KEYRING
+
+~/go/bin/evmosd add-genesis-account $RELAYER 100000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY2 100000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+
+# ~/go/bin/evmosd keys add $RELAYER --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys add $LOCALKEY --keyring-backend $KEYRING
+# ~/go/bin/evmosd tx bank send $KEY $RELAYER 100000000000aevmos --chain-id=evmos_9000-1 --keyring-backend $KEYRING
+# ~/go/bin/evmosd tx bank send $KEY $RELAYER 200000stake --chain-id=evmos_9000-1 --keyring-backend $KEYRING
 
 # Update total supply with claim values
 validators_supply=$(cat $HOME/.evmosd/config/genesis.json | jq -r '.app_state["bank"]["supply"][0]["amount"]')
 # Bc is required to add this big numbers
 # total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-total_supply=100000000000000000000010000
+total_supply=400000000000000000000010000
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
 # Sign genesis transaction
-evmosd gentx $KEY 1000000000000000000000aevmos --keyring-backend $KEYRING --chain-id $CHAINID
+~/go/bin/evmosd gentx $KEY 1000000000000000000000aevmos --keyring-backend $KEYRING --chain-id $CHAINID
 
 # Collect genesis tx
-evmosd collect-gentxs
+~/go/bin/evmosd collect-gentxs
 
 # Run this to ensure everything worked and that the genesis file is setup correctly
-evmosd validate-genesis
+~/go/bin/evmosd validate-genesis
 
 if [[ $1 == "pending" ]]; then
   echo "pending mode is on, please wait for the first block committed."
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3
+~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable
