@@ -1,5 +1,6 @@
 RELAYER="evmos1jmghmexanv84dj826gp24l7nfhm2zmrd8987cq"
-LOCALKEY="evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp"
+# LOCALKEY="evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp"
+LOCALKEY="evmos15u54vzzjq2355jh7krnxwnrp37eymtm3j9wkmp"
 # LOCALKEY2="evmos1g2wzln2mpy8mxwdd5ds06w6wneqycsvgvpwkcw"
 LOCALKEY2="evmos1f3d3t8y604x9ev4dfgf4hx270gdcrfal2m0hr3"
 KEY="mykey"
