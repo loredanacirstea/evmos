@@ -1,7 +1,5 @@
 RELAYER="evmos1jmghmexanv84dj826gp24l7nfhm2zmrd8987cq"
-# LOCALKEY="evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp"
-LOCALKEY="evmos15u54vzzjq2355jh7krnxwnrp37eymtm3j9wkmp"
-# LOCALKEY2="evmos1g2wzln2mpy8mxwdd5ds06w6wneqycsvgvpwkcw"
+LOCALKEY="evmos1fjx8p8uzx3h5qszqnwvelulzd659j8uafwws7e"
 LOCALKEY2="evmos1f3d3t8y604x9ev4dfgf4hx270gdcrfal2m0hr3"
 KEY="mykey"
 CHAINID="evmos_9000-1"
@@ -10,7 +8,7 @@ KEYRING="test"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
 # to trace evm
-#TRACE="--trace"
+# TRACE="--trace"
 TRACE=""
 
 # validate dependencies are installed
@@ -93,12 +91,12 @@ fi
 # ~/go/bin/evmosd keys delete $RELAYER  --keyring-backend $KEYRING
 # ~/go/bin/evmosd keys delete $LOCALKEY  --keyring-backend $KEYRING
 
-~/go/bin/evmosd add-genesis-account $KEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $KEY 100000000000000000000000000000000aevmos --keyring-backend $KEYRING
 ~/go/bin/evmosd add-genesis-account $KEY 200000000stake --keyring-backend $KEYRING
 
-~/go/bin/evmosd add-genesis-account $RELAYER 100000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
-~/go/bin/evmosd add-genesis-account $LOCALKEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
-~/go/bin/evmosd add-genesis-account $LOCALKEY2 100000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $RELAYER 100000000000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY 100000000000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY2 100000000000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
 
 # ~/go/bin/evmosd keys add $RELAYER --keyring-backend $KEYRING
 # ~/go/bin/evmosd keys add $LOCALKEY --keyring-backend $KEYRING
@@ -109,7 +107,7 @@ fi
 validators_supply=$(cat $HOME/.evmosd/config/genesis.json | jq -r '.app_state["bank"]["supply"][0]["amount"]')
 # Bc is required to add this big numbers
 # total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-total_supply=400000000000000000000010000
+total_supply=400000000000000000000000000010000
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
 # Sign genesis transaction
