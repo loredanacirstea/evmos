@@ -1,4 +1,4 @@
-RELAYER="evmos1jmghmexanv84dj826gp24l7nfhm2zmrd8987cq"
+RELAYER="evmos1f3d3t8y604x9ev4dfgf4hx270gdcrfal2m0hr3"
 LOCALKEY="evmos1fjx8p8uzx3h5qszqnwvelulzd659j8uafwws7e"
 LOCALKEY2="evmos14p4m46tlxwda07cw9zr9y6apzq9hnzu2xw0pv0"
 KEY="mykey"
