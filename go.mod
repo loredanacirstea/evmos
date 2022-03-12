@@ -141,7 +141,7 @@ require (
 	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
@@ -154,7 +154,9 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
 	github.com/cosmos/cosmos-sdk => github.com/tharsis/cosmos-sdk v0.45.2-0.20220306021140-2de5a020cedb
+	// github.com/tharsis/ethermint => github.com/tharsis/ethermint v0.6.1-0.20220311103116-50e093a6d29c
+	github.com/ethereum/go-ethereum => ../../ethereum/go-ethereum
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/tharsis/ethermint => github.com/tharsis/ethermint v0.6.1-0.20220311103116-50e093a6d29c
+	github.com/tharsis/ethermint => ../ethermint
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
