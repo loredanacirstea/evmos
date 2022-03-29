@@ -55,6 +55,16 @@ cat $HOME/.evmosd/config/genesis.json | jq -r --arg current_date "$current_date"
 # 0xA61808Fe40fEb8B3433778BBC2ecECCAA47c8c47 || evmos15cvq3ljql6utxseh0zau9m8ve2j8erz89m5wkz
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg amount_to_claim "$amount_to_claim" '.app_state["bank"]["balances"] += [{"address":"evmos15cvq3ljql6utxseh0zau9m8ve2j8erz89m5wkz","coins":[{"denom":"aevmos", "amount":$amount_to_claim}]}]' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
+
+# Fees
+registered_contract=0xdc0CEFCA29dD23c529628d5BB62cC92f72C89336
+# 0x31d370c8b3dDc16388B60A24b2d316519C4E65e1
+registered_owner=evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp
+withdraw_address=evmos1x8fhpj9nmhqk8z9kpgjt95ck2xwyue0ptzkucp
+cat $HOME/.evmosd/config/genesis.json | jq -r --arg registered_contract "$registered_contract" --arg registered_owner "$registered_owner" --arg withdraw_address "$withdraw_address" '.app_state["fees"]["fees"]=[{"contract":$registered_contract,"owner":$registered_owner,"withdraw_address":$withdraw_address}]' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
+
+
+
 # disable produce empty block
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' 's/create_empty_blocks = true/create_empty_blocks = false/g' $HOME/.evmosd/config/config.toml
