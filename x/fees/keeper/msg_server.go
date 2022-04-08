@@ -19,7 +19,7 @@ func (k Keeper) RegisterDevFeeInfo(
 	msg *types.MsgRegisterDevFeeInfo,
 ) (*types.MsgRegisterDevFeeInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.isEnabled(ctx) {
+	if !k.IsEnabled(ctx) {
 		return nil, sdkerrors.Wrapf(types.ErrInternalFee, "fees module is not enabled")
 	}
 
@@ -95,7 +95,7 @@ func (k Keeper) CancelDevFeeInfo(
 	msg *types.MsgCancelDevFeeInfo,
 ) (*types.MsgCancelDevFeeInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.isEnabled(ctx) {
+	if !k.IsEnabled(ctx) {
 		return nil, sdkerrors.Wrapf(types.ErrInternalFee, "fees module is not enabled")
 	}
 
@@ -108,8 +108,9 @@ func (k Keeper) CancelDevFeeInfo(
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not the contract deployer", msg.DeployerAddress)
 	}
 
-	k.DeleteFee(ctx, common.HexToAddress(msg.ContractAddress))
-	k.DeleteFeeInverse(ctx, deployerAddress)
+	contractAddress := common.HexToAddress(msg.ContractAddress)
+	k.DeleteFee(ctx, contractAddress)
+	k.DeleteFeeInverse(ctx, deployerAddress, contractAddress)
 
 	ctx.EventManager().EmitEvents(
 		sdk.Events{
@@ -130,7 +131,7 @@ func (k Keeper) UpdateDevFeeInfo(
 	msg *types.MsgUpdateDevFeeInfo,
 ) (*types.MsgUpdateDevFeeInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.isEnabled(ctx) {
+	if !k.IsEnabled(ctx) {
 		return nil, sdkerrors.Wrapf(types.ErrInternalFee, "fees module is not enabled")
 	}
 

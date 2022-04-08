@@ -17,7 +17,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramstore.SetParamSet(ctx, &params)
 }
 
-func (k Keeper) isEnabled(ctx sdk.Context) bool {
+func (k Keeper) IsEnabled(ctx sdk.Context) bool {
 	params := k.GetParams(ctx)
 	return params.EnableFees
 }

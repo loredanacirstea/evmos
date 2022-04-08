@@ -165,16 +165,34 @@ func (k Keeper) GetFeesInverse(ctx sdk.Context, deployerAddress sdk.AccAddress) 
 	return addresses
 }
 
+// setFeesInverse sets all registered contracts addresses per deployer
+func (k Keeper) setFeesInverse(ctx sdk.Context, deployerAddress sdk.AccAddress, contractAddresses []string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixInverse)
+	contracts := types.DevFeeInfosPerDeployer{ContractAddresses: contractAddresses}
+	bz := k.cdc.MustMarshal(&contracts)
+	store.Set(deployerAddress.Bytes(), bz)
+}
+
 // SetFeeInverse stores a registered contract inverse mapping
 func (k Keeper) SetFeeInverse(ctx sdk.Context, deployerAddress sdk.AccAddress, contractAddress common.Address) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixInverse)
-	store.Set(deployerAddress.Bytes(), contractAddress.Bytes())
+	contracts, _ := k.GetFeesInverseRaw(ctx, deployerAddress.Bytes())
+	contracts.ContractAddresses = append(contracts.ContractAddresses, contractAddress.String())
+	k.setFeesInverse(ctx, deployerAddress, contracts.ContractAddresses)
 }
 
 // DeleteFeeInverse removes a registered contract inverse mapping
-func (k Keeper) DeleteFeeInverse(ctx sdk.Context, deployerAddress sdk.AccAddress) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixFee)
-	store.Delete(deployerAddress.Bytes())
+func (k Keeper) DeleteFeeInverse(ctx sdk.Context, deployerAddress sdk.AccAddress, contractAddress common.Address) {
+	address := contractAddress.String()
+	contracts, _ := k.GetFeesInverseRaw(ctx, deployerAddress)
+	c := contracts.ContractAddresses
+	for i, contract := range c {
+		if contract == address {
+			c[i] = c[len(c)-1]
+			c = c[:len(c)-1]
+			break
+		}
+	}
+	k.setFeesInverse(ctx, deployerAddress, c)
 }
 
 // HasFeeInverse checks if a reverse mapping deployer => contracts exists
