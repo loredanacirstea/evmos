@@ -1,6 +1,8 @@
 package inter_tx
 
 import (
+	"fmt"
+
 	proto "github.com/gogo/protobuf/proto"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,6 +42,7 @@ func (im IBCModule) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) error {
+	fmt.Println("-------------OnChanOpenInit", connectionHops, portID, channelID, counterparty, version)
 	return im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID))
 }
 
@@ -65,6 +68,7 @@ func (im IBCModule) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	fmt.Println("-------------OnChanOpenAck", portID, channelID, counterpartyChannelID, counterpartyVersion)
 	return nil
 }
 
@@ -74,6 +78,7 @@ func (im IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	fmt.Println("-------------OnChanOpenConfirm", portID, channelID)
 	return nil
 }
 
@@ -83,6 +88,7 @@ func (im IBCModule) OnChanCloseInit(
 	portID,
 	channelID string,
 ) error {
+	fmt.Println("-------------OnChanCloseInit", portID, channelID)
 	return nil
 }
 
@@ -92,6 +98,7 @@ func (im IBCModule) OnChanCloseConfirm(
 	portID,
 	channelID string,
 ) error {
+	fmt.Println("-------------OnChanCloseConfirm", portID, channelID)
 	return nil
 }
 
@@ -103,6 +110,7 @@ func (im IBCModule) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	fmt.Println("-------------OnRecvPacket")
 	return channeltypes.NewErrorAcknowledgement("cannot receive packet via interchain accounts authentication module")
 }
 
@@ -113,6 +121,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Println("-------------OnAcknowledgementPacket")
 	var ack channeltypes.Acknowledgement
 	if err := channeltypes.SubModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 packet acknowledgement: %v", err)
@@ -162,6 +171,7 @@ func (im IBCModule) NegotiateAppVersion(
 }
 
 func handleMsgData(ctx sdk.Context, msgData *sdk.MsgData) (string, error) {
+	fmt.Println("-------------handleMsgData", msgData)
 	switch msgData.MsgType {
 	case sdk.MsgTypeURL(&banktypes.MsgSend{}):
 		msgResponse := &banktypes.MsgSendResponse{}

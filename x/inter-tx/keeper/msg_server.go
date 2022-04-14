@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,7 +27,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 // RegisterAccount implements the Msg/RegisterAccount interface
 func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAccount) (*types.MsgRegisterAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
+	fmt.Println("RegisterAccount", msg)
 	if err := k.icaControllerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, msg.Owner); err != nil {
 		return nil, err
 	}
@@ -37,6 +38,7 @@ func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegister
 // SubmitTx implements the Msg/SubmitTx interface
 func (k msgServer) SubmitTx(goCtx context.Context, msg *types.MsgSubmitTx) (*types.MsgSubmitTxResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	fmt.Println("SubmitTx", msg)
 
 	portID, err := icatypes.NewControllerPortID(msg.Owner)
 	if err != nil {
