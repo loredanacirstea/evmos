@@ -99,6 +99,11 @@ import (
 	evmrest "github.com/tharsis/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+
+	vmibc "github.com/tharsis/ethermint/x/controibc"
+	vmibckeeper "github.com/tharsis/ethermint/x/controibc/keeper"
+	vmibctypes "github.com/tharsis/ethermint/x/controibc/types"
+
 	"github.com/tharsis/ethermint/x/feemarket"
 	feemarketkeeper "github.com/tharsis/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/tharsis/ethermint/x/feemarket/types"
@@ -200,6 +205,7 @@ var (
 		claims.AppModuleBasic{},
 		recovery.AppModuleBasic{},
 		fees.AppModuleBasic{},
+		vmibc.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -272,6 +278,7 @@ type Evmos struct {
 	// Ethermint keepers
 	EvmKeeper       *evmkeeper.Keeper
 	FeeMarketKeeper feemarketkeeper.Keeper
+	VmIbcKeeper     vmibckeeper.Keeper
 
 	// Evmos keepers
 	InflationKeeper  inflationkeeper.Keeper
@@ -339,6 +346,7 @@ func NewEvmos(
 		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
 		feestypes.StoreKey,
+		vmibctypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -366,6 +374,7 @@ func NewEvmos(
 
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedVmIbcKeeper := app.CapabilityKeeper.ScopeToModule(vmibctypes.ModuleName)
 
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
 	// their scoped modules in `NewApp` with `ScopeToModule`
@@ -403,16 +412,27 @@ func NewEvmos(
 		appCodec, keys[feemarkettypes.StoreKey], app.GetSubspace(feemarkettypes.ModuleName),
 	)
 
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+	)
+
+	VmIbcKeeper := vmibckeeper.NewKeeper(
+		appCodec, keys[vmibctypes.StoreKey],
+		// tkeys[vmibctypes.TransientKey],
+		app.GetSubspace(vmibctypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedVmIbcKeeper,
+	)
+
 	// Create Ethermint keepers
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper,
+		VmIbcKeeper,
 		tracer,
-	)
-
-	// Create IBC Keeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), &stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
 	// register the proposal types
@@ -540,10 +560,12 @@ func NewEvmos(
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = claims.NewIBCMiddleware(*app.ClaimsKeeper, transferStack)
 	transferStack = recovery.NewIBCMiddleware(*app.RecoveryKeeper, transferStack)
+	vmIbcModule := vmibc.NewAppModule(appCodec, VmIbcKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
+	ibcRouter.AddRoute(vmibctypes.ModuleName, vmIbcModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// create evidence keeper with router
@@ -596,6 +618,7 @@ func NewEvmos(
 		vesting.NewAppModule(app.VestingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		fees.NewAppModule(app.FeesKeeper, app.AccountKeeper),
+		vmIbcModule,
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -633,6 +656,7 @@ func NewEvmos(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		feestypes.ModuleName,
+		vmibctypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -666,6 +690,7 @@ func NewEvmos(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		feestypes.ModuleName,
+		vmibctypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -704,6 +729,7 @@ func NewEvmos(
 		feestypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
+		vmibctypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -736,6 +762,7 @@ func NewEvmos(
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
+		vmIbcModule,
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -1020,6 +1047,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(incentivestypes.ModuleName)
 	paramsKeeper.Subspace(recoverytypes.ModuleName)
 	paramsKeeper.Subspace(feestypes.ModuleName)
+	paramsKeeper.Subspace(vmibctypes.ModuleName)
 	return paramsKeeper
 }
 
