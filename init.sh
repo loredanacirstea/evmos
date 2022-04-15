@@ -1,3 +1,6 @@
+RELAYER="evmos1f3d3t8y604x9ev4dfgf4hx270gdcrfal2m0hr3"
+LOCALKEY="evmos1fjx8p8uzx3h5qszqnwvelulzd659j8uafwws7e"
+LOCALKEY2="evmos14p4m46tlxwda07cw9zr9y6apzq9hnzu2xw0pv0"
 KEY="mykey"
 CHAINID="evmos_9000-1"
 MONIKER="localtestnet"
@@ -5,25 +8,25 @@ KEYRING="test"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
 # to trace evm
-#TRACE="--trace"
-TRACE=""
+TRACE="--trace"
+# TRACE=""
 
 # validate dependencies are installed
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
-# Reinstall daemon
+# remove existing daemon
 rm -rf ~/.evmosd*
+
 make install
 
-# Set client config
-evmosd config keyring-backend $KEYRING
-evmosd config chain-id $CHAINID
+~/go/bin/evmosd config keyring-backend $KEYRING
+~/go/bin/evmosd config chain-id $CHAINID
 
 # if $KEY exists it should be deleted
-evmosd keys add $KEY --keyring-backend $KEYRING --algo $KEYALGO
+~/go/bin/evmosd keys add $KEY --keyring-backend $KEYRING --algo $KEYALGO
 
 # Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
-evmosd init $MONIKER --chain-id $CHAINID
+~/go/bin/evmosd init $MONIKER --chain-id $CHAINID
 
 # Change parameter token denominations to aevmos
 cat $HOME/.evmosd/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aevmos"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
@@ -32,11 +35,14 @@ cat $HOME/.evmosd/config/genesis.json | jq '.app_state["gov"]["deposit_params"][
 cat $HOME/.evmosd/config/genesis.json | jq '.app_state["evm"]["params"]["evm_denom"]="aevmos"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 cat $HOME/.evmosd/config/genesis.json | jq '.app_state["inflation"]["params"]["mint_denom"]="aevmos"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
+# increase block time (?)
+cat $HOME/.evmosd/config/genesis.json | jq '.consensus_params["block"]["time_iota_ms"]="1000"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
+
 # Set gas limit in genesis
 cat $HOME/.evmosd/config/genesis.json | jq '.consensus_params["block"]["max_gas"]="10000000"' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
-# Set claims start time
-node_address=$(evmosd keys list | grep  "address: " | cut -c12-)
+# Get close date
+node_address=$(~/go/bin/evmosd keys list | grep  "address: " | cut -c12-)
 current_date=$(date -u +"%Y-%m-%dT%TZ")
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
@@ -84,27 +90,46 @@ if [[ $1 == "pending" ]]; then
 fi
 
 # Allocate genesis accounts (cosmos formatted addresses)
-evmosd add-genesis-account $KEY 100000000000000000000000000aevmos --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys delete $RELAYER  --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys delete $LOCALKEY  --keyring-backend $KEYRING
+
+~/go/bin/evmosd add-genesis-account $KEY 100000000000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $KEY 200000000stake --keyring-backend $KEYRING
+
+~/go/bin/evmosd add-genesis-account $RELAYER 100000000000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY 100000000000000000000000000000000aevmos --keyring-backend $KEYRING
+~/go/bin/evmosd add-genesis-account $LOCALKEY2 100000000000000000000000000000000aevmos,200000000stake --keyring-backend $KEYRING
+
+# ~/go/bin/evmosd keys add $RELAYER --keyring-backend $KEYRING
+# ~/go/bin/evmosd keys add $LOCALKEY --keyring-backend $KEYRING
+# ~/go/bin/evmosd tx bank send $KEY $RELAYER 100000000000aevmos --chain-id=evmos_9000-1 --keyring-backend $KEYRING
+# ~/go/bin/evmosd tx bank send $KEY $RELAYER 200000stake --chain-id=evmos_9000-1 --keyring-backend $KEYRING
 
 # Update total supply with claim values
 validators_supply=$(cat $HOME/.evmosd/config/genesis.json | jq -r '.app_state["bank"]["supply"][0]["amount"]')
 # Bc is required to add this big numbers
 # total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-total_supply=100000000000000000000010000
+total_supply=400000000000000000000000000010000
 cat $HOME/.evmosd/config/genesis.json | jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' > $HOME/.evmosd/config/tmp_genesis.json && mv $HOME/.evmosd/config/tmp_genesis.json $HOME/.evmosd/config/genesis.json
 
 # Sign genesis transaction
-evmosd gentx $KEY 1000000000000000000000aevmos --keyring-backend $KEYRING --chain-id $CHAINID
+~/go/bin/evmosd gentx $KEY 1000000000000000000000aevmos --keyring-backend $KEYRING --chain-id $CHAINID
 
 # Collect genesis tx
-evmosd collect-gentxs
+~/go/bin/evmosd collect-gentxs
 
 # Run this to ensure everything worked and that the genesis file is setup correctly
-evmosd validate-genesis
+~/go/bin/evmosd validate-genesis
 
 if [[ $1 == "pending" ]]; then
   echo "pending mode is on, please wait for the first block committed."
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3
+~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.106:9091 --json-rpc.address 192.168.0.106:8545 --json-rpc.ws-address 192.168.0.106:8546 --rpc.laddr tcp://192.168.0.106:26657
+
+
+
+# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable
+
+# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.106:9091 --json-rpc.address 192.168.0.106:8545 --json-rpc.ws-address 192.168.0.106:8546 --rpc.laddr tcp://192.168.0.106:26657
