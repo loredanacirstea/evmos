@@ -14,6 +14,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	"github.com/tharsis/evmos/v3/x/inter-tx/client/cli"
 	"github.com/tharsis/evmos/v3/x/inter-tx/keeper"
 	"github.com/tharsis/evmos/v3/x/inter-tx/types"
@@ -22,6 +23,7 @@ import (
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
+	_ porttypes.IBCModule   = AppModule{}
 )
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
