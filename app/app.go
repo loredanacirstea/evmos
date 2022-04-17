@@ -1108,6 +1108,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(vmibctypes.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
+	paramsKeeper.Subspace(intertxtypes.ModuleName)
 	return paramsKeeper
 }
 
