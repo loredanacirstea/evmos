@@ -165,25 +165,75 @@ func (suite *IBCTestingSuite) SetupTest() {
 	suite.Require().NoError(err)
 	suite.coordinator.CommitBlock(suite.chainA)
 
-	ica, err := chainB.InterTxKeeper.InterchainAccountFromAddressInner(suite.chainB.GetContext(), &intertx.QueryInterchainAccountFromAddressRequest{Owner: suite.address.String(), ConnectionId: "connection-0"})
-	suite.Require().NoError(err)
-	suite.Require().Equal(suite.TestPortID, ica.InterchainAccountAddress)
+	// openTry := channeltypes.NewMsgRecvPacket()
+	// bz := channeltypes.SubModuleCdc.MustMarshalJSON(&openTry)
+	// packetTry := channeltypes.NewPacket(
+	// 	bz,
+	// 	1,
+	// 	suite.pathICA.EndpointA.ChannelConfig.PortID,
+	// 	suite.pathICA.EndpointA.ChannelID,
+	// 	suite.pathICA.EndpointB.ChannelConfig.PortID,
+	// 	suite.pathICA.EndpointB.ChannelID,
+	// 	timeoutHeight,
+	// 	0,
+	// )
+	// // send on endpointB
+	// err = suite.pathICA.EndpointB.SendPacket(packetTry)
+	// suite.Require().NoError(err)
 
-	fmt.Println("---ica", ica)
+	// openTryMsg := &channeltypes.MsgChannelOpenTry{
+	// 	PortId: suite.TestPortID,
+	// 	PreviousChannelId: "",
+	// 	Channel: "",
+	// 	CounterpartyVersion: suite.TestVersion,
+	// 	ProofInit: ,
+	// 	ProofHeight: ,
+	// 	Signer: ,
+	// }
 
-	// ica, err := chainA.InterTxKeeper.InterchainAccountFromAddressInner(suite.chainA.GetContext(), &intertx.QueryInterchainAccountFromAddressRequest{Owner: suite.address.String(), ConnectionId: "connection-0"})
+	// // suite.chainA.App.GetIBCKeeper().ChannelKeeper.ChanOpenTry(
+	// chainB.IBCKeeper.ChannelOpenTry(
+	// 	sdk.WrapSDKContext(suite.chainB.GetContext()),
+	// 	openTryMsg,
+	// )
+
+	// suite.pathICA.EndpointA.Chain.Coordinator.UpdateTimeForChain(suite.pathICA.EndpointA.Chain)
+	// suite.pathICA.EndpointA.Chain.App.GetBaseApp().Commit()
+	// suite.pathICA.EndpointA.Chain.NextBlock()
+	// suite.pathICA.EndpointA.Chain.Coordinator.IncrementTime()
+
+	suite.coordinator.CommitNBlocks(suite.chainA, 1)
+	// suite.coordinator.CommitNBlocks(suite.chainB, 1)
+
+	fmt.Println("--.EndpointA PortID", suite.pathICA.EndpointA.ChannelConfig.PortID)
+	fmt.Println("--.EndpointA Version", suite.pathICA.EndpointA.ChannelConfig.Version)
+	fmt.Println("--.EndpointA Order", suite.pathICA.EndpointA.ChannelConfig.Order)
+	fmt.Println("--.EndpointA ChannelID", suite.pathICA.EndpointA.ChannelID)
+
+	channels := chainA.IBCKeeper.ChannelKeeper.GetAllChannels(suite.chainA.GetContext())
+	fmt.Println("channels", channels)
+
+	// // send ChanOpenTry message to ChainB
+	// suite.pathICA.EndpointA.ChannelID = "channel-0"
+	// suite.pathICA.EndpointB.Counterparty.ChannelConfig.PortID = suite.pathICA.EndpointA.ChannelConfig.PortID
+	// suite.pathICA.EndpointB.Counterparty.ChannelConfig.Version = suite.pathICA.EndpointA.ChannelConfig.Version
+	// suite.pathICA.EndpointB.Counterparty.ChannelConfig.Order = suite.pathICA.EndpointA.ChannelConfig.Order
+	// suite.pathICA.EndpointB.Counterparty.ChannelID = suite.pathICA.EndpointA.ChannelID
+	// err = suite.pathICA.EndpointB.ChanOpenTry()
+	// suite.Require().NoError(err)
+
+	// ica, err := chainB.InterTxKeeper.InterchainAccountFromAddressInner(suite.chainB.GetContext(), &intertx.QueryInterchainAccountFromAddressRequest{Owner: suite.address.String(), ConnectionId: "connection-0"})
 	// suite.Require().NoError(err)
 	// suite.Require().Equal(suite.TestPortID, ica.InterchainAccountAddress)
 
 	// fmt.Println("---ica", ica)
-
 }
 
 func TestIBCTestingSuite(t *testing.T) {
 	suite.Run(t, new(IBCTestingSuite))
 }
 
-func (suite *IBCTestingSuite) TestIcaSubmitTx() {
+func (suite *IBCTestingSuite) TestIcaEthereumNoSignTx() {
 	ica := suite.TestPortID
 	chainA := suite.chainA.App.(*app.Evmos)
 	fmt.Println("----ica----", ica)
@@ -206,47 +256,74 @@ func (suite *IBCTestingSuite) TestIcaSubmitTx() {
 	ethtx.From = common.BytesToAddress(icaAddr.Bytes()).Hex()
 	fmt.Println("ethtx.From", ethtx.From)
 
-	msg, err := intertx.NewMsgSubmitTx(ethtx, "connection-0", suite.address.String())
-	suite.Require().NoError(err)
-
-	res, err := chainA.InterTxKeeper.SubmitTx(suite.chainA.GetContext(), msg)
-	fmt.Println("----SubmitTx res----", res, err)
-	suite.Require().NoError(err)
+	res, err := chainA.EvmKeeper.EthereumIcaTx(sdk.WrapSDKContext(suite.chainA.GetContext()), ethtx)
+	fmt.Println("res", res)
 }
 
-func (suite *IBCTestingSuite) TestIcaPrecompile() {
-	suite.SetupTest()
-	chainA := suite.chainA.App.(*app.Evmos)
-	// chainB := suite.chainB.App.(*app.Evmos)
+// func (suite *IBCTestingSuite) TestIcaSubmitTx() {
+// 	ica := suite.TestPortID
+// 	chainA := suite.chainA.App.(*app.Evmos)
+// 	fmt.Println("----ica----", ica)
+// 	nonce := uint64(0)
+// 	value := big.NewInt(0)
+// 	to := common.BytesToAddress(suite.address.Bytes())
+// 	gasLimit := uint64(300000)
+// 	gasPrice := big.NewInt(20)
+// 	gasFeeCap := big.NewInt(20)
+// 	gasTipCap := big.NewInt(20)
+// 	data := make([]byte, 0)
+// 	accesses := &ethtypes.AccessList{}
+// 	ethtx := evmtypes.NewIcaTx(chainA.EvmKeeper.ChainID(), nonce, &to, value, gasLimit, gasPrice, gasFeeCap, gasTipCap, data, accesses)
 
-	chainID := chainA.EvmKeeper.ChainID()
-	from := suite.address
-	nonce := getNonce(chainA, suite.chainA.GetContext(), from.Bytes())
-	data := make([]byte, 0)
-	gasLimit := uint64(100000)
-	gasPrice := big.NewInt(2000000000)
-	gasFeeCap := big.NewInt(2000000000)
-	gasTipCap := big.NewInt(2000000000)
-	precompileAddress := common.HexToAddress("0x0000000000000000000000000000000000000019")
-	msgEthereumTx := evmtypes.NewTx(
-		chainID,
-		nonce,
-		&precompileAddress,
-		nil,
-		gasLimit,
-		gasPrice,
-		gasFeeCap,
-		gasTipCap,
-		data,
-		nil,
-	)
-	msgEthereumTx.From = from.String()
+// 	// ethicatx := (*types.MsgEthereumIcaTx)(ethtx)
+// 	// ethicatx := (*types.MsgEthereumIcaTx)(*ethtx.(*types.MsgEthereumTx))
 
-	res := suite.performEthTx(chainA, suite.chainA.GetContext(), suite.ethSigner1, suite.priv, msgEthereumTx)
-	suite.coordinator.CommitNBlocks(suite.chainA, 1)
-	fmt.Println(res.GetLog())
-	suite.Require().True(false)
-}
+// 	icaAddr, err := sdk.AccAddressFromBech32(ica)
+// 	fmt.Println("ethtx.From", icaAddr, err)
+// 	ethtx.From = common.BytesToAddress(icaAddr.Bytes()).Hex()
+// 	fmt.Println("ethtx.From", ethtx.From)
+
+// 	msg, err := intertx.NewMsgSubmitTx(ethtx, "connection-0", suite.address.String())
+// 	suite.Require().NoError(err)
+
+// 	res, err := chainA.InterTxKeeper.SubmitTx(suite.chainA.GetContext(), msg)
+// 	fmt.Println("----SubmitTx res----", res, err)
+// 	suite.Require().NoError(err)
+// }
+
+// func (suite *IBCTestingSuite) TestIcaPrecompile() {
+// 	suite.SetupTest()
+// 	chainA := suite.chainA.App.(*app.Evmos)
+// 	// chainB := suite.chainB.App.(*app.Evmos)
+
+// 	chainID := chainA.EvmKeeper.ChainID()
+// 	from := suite.address
+// 	nonce := getNonce(chainA, suite.chainA.GetContext(), from.Bytes())
+// 	data := make([]byte, 0)
+// 	gasLimit := uint64(100000)
+// 	gasPrice := big.NewInt(2000000000)
+// 	gasFeeCap := big.NewInt(2000000000)
+// 	gasTipCap := big.NewInt(2000000000)
+// 	precompileAddress := common.HexToAddress("0x0000000000000000000000000000000000000019")
+// 	msgEthereumTx := evmtypes.NewTx(
+// 		chainID,
+// 		nonce,
+// 		&precompileAddress,
+// 		nil,
+// 		gasLimit,
+// 		gasPrice,
+// 		gasFeeCap,
+// 		gasTipCap,
+// 		data,
+// 		nil,
+// 	)
+// 	msgEthereumTx.From = from.String()
+
+// 	res := suite.performEthTx(chainA, suite.chainA.GetContext(), suite.ethSigner1, suite.priv, msgEthereumTx)
+// 	suite.coordinator.CommitNBlocks(suite.chainA, 1)
+// 	fmt.Println(res.GetLog())
+// 	suite.Require().True(false)
+// }
 
 func NewICAPath(chainA, chainB *ibcgotesting.TestChain, TestVersion string) *ibcgotesting.Path {
 	path := ibcgotesting.NewPath(chainA, chainB)
