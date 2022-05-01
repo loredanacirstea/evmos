@@ -446,7 +446,7 @@ func NewEvmos(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
-	app.InterTxKeeper = intertxkeeper.NewKeeper(appCodec, keys[intertxtypes.StoreKey], app.ICAControllerKeeper, scopedInterTxKeeper)
+	app.InterTxKeeper = intertxkeeper.NewKeeper(appCodec, keys[intertxtypes.StoreKey], app.ICAControllerKeeper, scopedInterTxKeeper, nil, app.BankKeeper)
 
 	// Create Ethermint keepers
 	app.EvmKeeper = evmkeeper.NewKeeper(
@@ -454,6 +454,7 @@ func NewEvmos(
 		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper, &app.InterTxKeeper,
 		tracer,
 	)
+	app.InterTxKeeper.EvmKeeper = app.EvmKeeper
 
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
@@ -583,17 +584,21 @@ func NewEvmos(
 
 	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 	interTxModule := intertx.NewAppModule(appCodec, app.InterTxKeeper)
-	interTxIBCModule := intertx.NewIBCModule(app.InterTxKeeper)
 
-	icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, interTxIBCModule)
+	// interTxIBCModule := intertx.NewIBCModule(app.InterTxKeeper)
+	// icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, interTxIBCModule)
+	var icaControllerStack porttypes.IBCModule
+	icaControllerStack = intertx.NewIBCModule(app.InterTxKeeper)
+	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, app.ICAControllerKeeper)
+
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
-	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
+	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(intertxtypes.ModuleName, icaControllerIBCModule)
+		AddRoute(intertxtypes.ModuleName, icaControllerStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// create evidence keeper with router
