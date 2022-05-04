@@ -81,3 +81,8 @@ func (k Keeper) SendPacket(ctx sdk.Context, channelCap *capabilitytypes.Capabili
 func (k Keeper) WriteAcknowledgement(ctx sdk.Context, channelCap *capabilitytypes.Capability, packet exported.PacketI, ack exported.Acknowledgement) error {
 	return k.ics4Wrapper.WriteAcknowledgement(ctx, channelCap, packet, ack)
 }
+
+// GetAppVersion calls the ICS4Wrapper GetAppVersion function.
+func (k Keeper) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
+	return k.ics4Wrapper.GetAppVersion(ctx, portID, channelID)
+}

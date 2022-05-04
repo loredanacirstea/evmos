@@ -64,3 +64,8 @@ func (im IBCMiddleware) WriteAcknowledgement(
 ) error {
 	return im.keeper.WriteAcknowledgement(ctx, chanCap, packet, ack)
 }
+
+// GetAppVersion returns the interchain accounts metadata.
+func (im IBCMiddleware) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
+	return im.keeper.GetAppVersion(ctx, portID, channelID)
+}

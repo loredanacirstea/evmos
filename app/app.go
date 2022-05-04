@@ -446,7 +446,8 @@ func NewEvmos(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
-	app.InterTxKeeper = intertxkeeper.NewKeeper(appCodec, keys[intertxtypes.StoreKey], app.ICAControllerKeeper, scopedInterTxKeeper, nil, app.BankKeeper)
+
+	app.InterTxKeeper = intertxkeeper.NewKeeper(appCodec, keys[intertxtypes.StoreKey], app.ICAControllerKeeper, scopedInterTxKeeper, nil, app.BankKeeper, app.AccountKeeper, app.BaseApp.DeliverTx, ModuleBasics, app.Commit)
 
 	// Create Ethermint keepers
 	app.EvmKeeper = evmkeeper.NewKeeper(
@@ -1001,6 +1002,13 @@ func (app *Evmos) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConf
 	if apiConfig.Swagger {
 		RegisterSwaggerAPI(clientCtx, apiSvr.Router)
 	}
+}
+
+func (app *Evmos) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error) {
+	gasInfo, result, error := app.BaseApp.Simulate(txBytes)
+	gasInfo.GasUsed = gasInfo.GasUsed * 3
+	gasInfo.GasWanted = gasInfo.GasWanted * 3
+	return gasInfo, result, error
 }
 
 func (app *Evmos) RegisterTxService(clientCtx client.Context) {
