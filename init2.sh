@@ -97,16 +97,16 @@ fi
 
 # sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:26653\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:26652\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:6061\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:26651\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":26655\"%" $CHAINDIR/config/config.toml sed -i.bak -e "s%^address = \"0.0.0.0:1317\"%address = \"0.0.0.0:1318\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:9092\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:9093\"%" $CHAINDIR/config/app.toml
 
-# sed -i.bak -e "s%^address = \"0.0.0.0:1317\"%address = \"192.168.0.106:1318\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:9092\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:9093\"%" $CHAINDIR/config/app.toml
+# sed -i.bak -e "s%^address = \"0.0.0.0:1317\"%address = \"192.168.0.102:1318\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:9092\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:9093\"%" $CHAINDIR/config/app.toml
 
-sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://192.168.0.106:1318\"%" $CHAINDIR/config/app.toml
+sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://192.168.0.102:1318\"%" $CHAINDIR/config/app.toml
 
-sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/ethermint.evm.v1.MsgEthereumTx\", \"\/ethermint.evm.v1.MsgEthereumIcaTx\", \"\/ethermint.evm.v1.AccessListTx\", \"\/ethermint.evm.v1.DynamicFeeTx\", \"\/ethermint.evm.v1.LegacyTx\", \"\/ethermint.evm.v1.Msg\", \"\/ethermint.evm.v1.ExtensionOptionsEthereumTx\", \"\/ethermint.types.v1.ExtensionOptionsWeb3Tx\"]/g' $CHAINDIR/config/genesis.json
+sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/ethermint.evm.v1.MsgEthereumTx\", \"\/ethermint.intertx.v1.MsgWrappedEthereumTx\", \"\/ethermint.evm.v1.AccessListTx\", \"\/ethermint.evm.v1.DynamicFeeTx\", \"\/ethermint.evm.v1.LegacyTx\", \"\/ethermint.evm.v1.Msg\", \"\/ethermint.evm.v1.ExtensionOptionsEthereumTx\", \"\/ethermint.types.v1.ExtensionOptionsWeb3Tx\"]/g' $CHAINDIR/config/genesis.json
 
 
 # sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:26653\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:26652\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:6061\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:26651\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":26655\"%" config.toml sed -i.bak -e "s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:9092\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:9093\"%" app.toml
 
-# ~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --home $CHAINDIR --grpc-web.address 192.168.0.106:39091 --json-rpc.address 192.168.0.106:38545 --json-rpc.ws-address 192.168.0.106:38546 --rpc.laddr tcp://192.168.0.106:36657 --rpc.pprof_laddr tcp://192.168.0.106:36060 --rpc.grpc_laddr tcp://192.168.0.106:39092 --address tcp://0.0.0.0:36658 --p2p.laddr tcp://0.0.0.0:36656 --grpc.address 0.0.0.0:39090
+# ~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --home $CHAINDIR --grpc-web.address 192.168.0.102:39091 --json-rpc.address 192.168.0.102:38545 --json-rpc.ws-address 192.168.0.102:38546 --rpc.laddr tcp://192.168.0.102:36657 --rpc.pprof_laddr tcp://192.168.0.102:36060 --rpc.grpc_laddr tcp://192.168.0.102:39092 --address tcp://0.0.0.0:36658 --p2p.laddr tcp://0.0.0.0:36656 --grpc.address 0.0.0.0:39090
 
 
 
@@ -149,11 +149,11 @@ if [[ $1 == "pending" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --home $CHAINDIR --grpc-web.address 192.168.0.106:39091 --json-rpc.address 192.168.0.106:38545 --json-rpc.ws-address 192.168.0.106:38546 --rpc.laddr tcp://192.168.0.106:36657 --rpc.grpc_laddr tcp://192.168.0.106:39092 --address tcp://0.0.0.0:36658 --p2p.laddr tcp://0.0.0.0:36656 --grpc.address 0.0.0.0:39090
+~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --home $CHAINDIR --grpc-web.address 192.168.0.102:39091 --json-rpc.address 192.168.0.102:38545 --json-rpc.ws-address 192.168.0.102:38546 --rpc.laddr tcp://192.168.0.102:36657 --rpc.grpc_laddr tcp://192.168.0.102:39092 --address tcp://0.0.0.0:36658 --p2p.laddr tcp://0.0.0.0:36656 --grpc.address 0.0.0.0:39090
 
 
-# --api.laddr tcp://192.168.0.106:3317
-# --rpc.pprof_laddr tcp://192.168.0.106:36060
+# --api.laddr tcp://192.168.0.102:3317
+# --rpc.pprof_laddr tcp://192.168.0.102:36060
 
 # --priv_validator_laddr
 # --p2p.laddr tcp://0.0.0.0:26656
@@ -164,4 +164,4 @@ fi
 
 # ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable
 
-# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.106:9091 --json-rpc.address 192.168.0.106:8545 --json-rpc.ws-address 192.168.0.106:8546 --rpc.laddr tcp://192.168.0.106:26657
+# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.102:9091 --json-rpc.address 192.168.0.102:8545 --json-rpc.ws-address 192.168.0.102:8546 --rpc.laddr tcp://192.168.0.102:26657

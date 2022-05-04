@@ -92,7 +92,8 @@ if [[ $1 == "pending" ]]; then
   fi
 fi
 
-sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/ethermint.evm.v1.MsgEthereumTx\", \"\/ethermint.evm.v1.MsgEthereumIcaTx\", \"\/ethermint.evm.v1.AccessListTx\", \"\/ethermint.evm.v1.DynamicFeeTx\", \"\/ethermint.evm.v1.LegacyTx\", \"\/ethermint.evm.v1.Msg\", \"\/ethermint.evm.v1.ExtensionOptionsEthereumTx\", \"\/ethermint.types.v1.ExtensionOptionsWeb3Tx\"]/g' $HOME/.evmosd/config/genesis.json
+sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/ethermint.evm.v1.MsgEthereumTx\", \"\/ethermint.intertx.v1.MsgWrappedEthereumTx\", \"\/ethermint.evm.v1.AccessListTx\", \"\/ethermint.evm.v1.DynamicFeeTx\", \"\/ethermint.evm.v1.LegacyTx\", \"\/ethermint.evm.v1.Msg\", \"\/ethermint.evm.v1.ExtensionOptionsEthereumTx\", \"\/ethermint.types.v1.ExtensionOptionsWeb3Tx\"]/g' $HOME/.evmosd/config/genesis.json
+
 
 # sed -i 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' $HOME/.evmosd/config/app.toml
 
@@ -133,10 +134,10 @@ if [[ $1 == "pending" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.106:9091 --json-rpc.address 192.168.0.106:8545 --json-rpc.ws-address 192.168.0.106:8546 --rpc.laddr tcp://192.168.0.106:26657
+~/go/bin/evmosd start --pruning=nothing $TRACE --log_level $LOGLEVEL --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.102:9091 --json-rpc.address 192.168.0.102:8545 --json-rpc.ws-address 192.168.0.102:8546 --rpc.laddr tcp://192.168.0.102:26657
 
 
 
 # ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable
 
-# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.106:9091 --json-rpc.address 192.168.0.106:8545 --json-rpc.ws-address 192.168.0.106:8546 --rpc.laddr tcp://192.168.0.106:26657
+# ~/go/bin/evmosd start --pruning=nothing --trace --log_level trace --minimum-gas-prices=0.0001aevmos --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --grpc-web.address 192.168.0.102:9091 --json-rpc.address 192.168.0.102:8545 --json-rpc.ws-address 192.168.0.102:8546 --rpc.laddr tcp://192.168.0.102:26657
