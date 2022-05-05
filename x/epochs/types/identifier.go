@@ -5,6 +5,19 @@ import (
 	"strings"
 )
 
+const (
+	// YearEpochID defines the identifier for yealy epochs
+	YearEpochID = "year"
+	// WeekEpochID defines the identifier for weekly epochs
+	WeekEpochID = "week"
+	// DayEpochID defines the identifier for daily epochs
+	DayEpochID = "day"
+	// HourEpochID defines the identifier for hourly epochs
+	HourEpochID = "hour"
+)
+
+// ValidateEpochIdentifierInterface performs a stateless
+// validation of the epoch ID interface.
 func ValidateEpochIdentifierInterface(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {
@@ -17,6 +30,8 @@ func ValidateEpochIdentifierInterface(i interface{}) error {
 	return nil
 }
 
+// ValidateEpochIdentifierInterface performs a stateless
+// validation of the epoch ID.
 func ValidateEpochIdentifierString(s string) error {
 	s = strings.TrimSpace(s)
 	if s == "" {
