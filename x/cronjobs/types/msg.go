@@ -35,7 +35,7 @@ func (msg MsgRegisterCronjob) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return sdkerrors.Wrapf(err, "invalid deployer address %s", msg.Sender)
 	}
-	// TODO validation cronjob
+	// TODO validation cronjob fields
 	return nil
 }
 

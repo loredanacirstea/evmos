@@ -29,6 +29,7 @@
   
 - [evmos/cronjobs/v1/cronjob.proto](#evmos/cronjobs/v1/cronjob.proto)
     - [Cronjob](#evmos.cronjobs.v1.Cronjob)
+    - [CronjobsByEpochIdentifier](#evmos.cronjobs.v1.CronjobsByEpochIdentifier)
   
 - [evmos/cronjobs/v1/genesis.proto](#evmos/cronjobs/v1/genesis.proto)
     - [GenesisState](#evmos.cronjobs.v1.GenesisState)
@@ -506,12 +507,28 @@ Query defines the gRPC querier service.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `identifier` | [string](#string) |  |  |
+| `epoch_identifier` | [string](#string) |  |  |
 | `contract_address` | [string](#string) |  | transaction to be executed |
 | `input` | [string](#string) |  |  |
 | `value` | [uint64](#uint64) |  |  |
 | `gas_limit` | [uint64](#uint64) |  |  |
 | `gas_price` | [uint64](#uint64) |  |  |
 | `sender` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="evmos.cronjobs.v1.CronjobsByEpochIdentifier"></a>
+
+### CronjobsByEpochIdentifier
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `identifiers` | [string](#string) | repeated |  |
 
 
 

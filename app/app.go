@@ -126,6 +126,9 @@ import (
 	"github.com/tharsis/evmos/v4/x/claims"
 	claimskeeper "github.com/tharsis/evmos/v4/x/claims/keeper"
 	claimstypes "github.com/tharsis/evmos/v4/x/claims/types"
+	"github.com/tharsis/evmos/v4/x/cronjobs"
+	cronjobskeeper "github.com/tharsis/evmos/v4/x/cronjobs/keeper"
+	cronjobstypes "github.com/tharsis/evmos/v4/x/cronjobs/types"
 	"github.com/tharsis/evmos/v4/x/epochs"
 	epochskeeper "github.com/tharsis/evmos/v4/x/epochs/keeper"
 	epochstypes "github.com/tharsis/evmos/v4/x/epochs/types"
@@ -213,6 +216,7 @@ var (
 		claims.AppModuleBasic{},
 		recovery.AppModuleBasic{},
 		fees.AppModuleBasic{},
+		cronjobs.AppModuleBasic{},
 		ica.AppModuleBasic{},
 	)
 
@@ -304,6 +308,7 @@ type Evmos struct {
 	VestingKeeper    vestingkeeper.Keeper
 	RecoveryKeeper   *recoverykeeper.Keeper
 	FeesKeeper       feeskeeper.Keeper
+	CronjobsKeeper   cronjobskeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -363,6 +368,7 @@ func NewEvmos(
 		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
 		feestypes.StoreKey,
+		cronjobstypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -517,6 +523,12 @@ func NewEvmos(
 		authtypes.FeeCollectorName,
 	)
 
+	app.CronjobsKeeper = cronjobskeeper.NewKeeper(keys[cronjobstypes.StoreKey], appCodec, app.GetSubspace(cronjobstypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
+		app.InterTxKeeper,
+		authtypes.FeeCollectorName,
+	)
+
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
 	app.EpochsKeeper = *epochsKeeper.SetHooks(
 		epochskeeper.NewMultiEpochHooks(
@@ -653,6 +665,7 @@ func NewEvmos(
 		vesting.NewAppModule(app.VestingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		recovery.NewAppModule(*app.RecoveryKeeper),
 		fees.NewAppModule(app.FeesKeeper, app.AccountKeeper),
+		cronjobs.NewAppModule(app.CronjobsKeeper, app.AccountKeeper),
 		icaModule,
 		interTxModule,
 	)
@@ -692,6 +705,7 @@ func NewEvmos(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		feestypes.ModuleName,
+		cronjobstypes.ModuleName,
 		icatypes.ModuleName,
 		intertxtypes.ModuleName,
 	)
@@ -727,6 +741,7 @@ func NewEvmos(
 		incentivestypes.ModuleName,
 		recoverytypes.ModuleName,
 		feestypes.ModuleName,
+		cronjobstypes.ModuleName,
 		icatypes.ModuleName,
 		intertxtypes.ModuleName,
 	)
@@ -765,10 +780,11 @@ func NewEvmos(
 		epochstypes.ModuleName,
 		recoverytypes.ModuleName,
 		feestypes.ModuleName,
-		// NOTE: crisis module must go at the end to check for invariants on each module
-		crisistypes.ModuleName,
 		icatypes.ModuleName,
 		intertxtypes.ModuleName,
+		cronjobstypes.ModuleName,
+		// NOTE: crisis module must go at the end to check for invariants on each module
+		crisistypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -1095,6 +1111,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(incentivestypes.ModuleName)
 	paramsKeeper.Subspace(recoverytypes.ModuleName)
 	paramsKeeper.Subspace(feestypes.ModuleName)
+	paramsKeeper.Subspace(cronjobstypes.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	return paramsKeeper

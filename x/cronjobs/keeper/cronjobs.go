@@ -24,26 +24,34 @@ func (k Keeper) GetAllCronjobs(ctx sdk.Context) []types.Cronjob {
 	return values
 }
 
+// GetAllCronjobs - get all registered DevFeeInfo instances
+func (k Keeper) GetAllCronjobsByEpoch(ctx sdk.Context, epochIdentifier string) []types.Cronjob {
+	values := []types.Cronjob{}
+	ids := k.GetCronjobIdentifiersByEpoch(ctx, epochIdentifier)
+	for _, id := range ids.Identifiers {
+		value, _ := k.GetCronjob(ctx, id)
+		values = append(values, value)
+	}
+	return values
+}
+
 // IterateCronjobs iterates over all registered contracts and performs a
 // callback with the corresponding DevFeeInfo.
-func (k Keeper) IterateCronjobs(
+func (k Keeper) IterateCronjobsByEpoch(
 	ctx sdk.Context,
-	handlerFn func(fee types.Cronjob) (stop bool),
+	epochIdentifier string,
+	handlerFn func(cronjob types.Cronjob) (stop bool),
 ) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyPrefixCronjob)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var value types.Cronjob
-		k.cdc.MustUnmarshal(iterator.Value(), &value)
+	ids := k.GetCronjobIdentifiersByEpoch(ctx, epochIdentifier)
+	for _, id := range ids.Identifiers {
+		value, _ := k.GetCronjob(ctx, id)
 		if handlerFn(value) {
 			break
 		}
 	}
 }
 
-// GetFeeInfo returns DevFeeInfo for a registered contract
+// GetCronjob
 func (k Keeper) GetCronjob(ctx sdk.Context, id string) (types.Cronjob, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjob)
 	bz := store.Get([]byte(id))
@@ -56,11 +64,35 @@ func (k Keeper) GetCronjob(ctx sdk.Context, id string) (types.Cronjob, bool) {
 	return value, true
 }
 
+// GetCronjobIdentifiersByEpoch
+func (k Keeper) GetCronjobIdentifiersByEpoch(ctx sdk.Context, epochIdentifier string) types.CronjobsByEpochIdentifier {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjob)
+	bz := store.Get([]byte(epochIdentifier))
+	if len(bz) == 0 {
+		return types.CronjobsByEpochIdentifier{Identifiers: make([]string, 0)}
+	}
+
+	var value types.CronjobsByEpochIdentifier
+	k.cdc.MustUnmarshal(bz, &value)
+	return value
+}
+
 // SetFee stores the developer fee information for a registered contract
 func (k Keeper) SetCronjob(ctx sdk.Context, id string, cronjob types.Cronjob) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjob)
 	bz := k.cdc.MustMarshal(&cronjob)
 	store.Set([]byte(id), bz)
+	k.SetCronjobIdentifier(ctx, cronjob.EpochIdentifier, id)
+}
+
+// SetCronjobIdentifier
+func (k Keeper) SetCronjobIdentifier(ctx sdk.Context, epochIdentifier string, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjobIdentifier)
+
+	ids := k.GetCronjobIdentifiersByEpoch(ctx, epochIdentifier)
+	ids.Identifiers = append(ids.Identifiers, id)
+	bz := k.cdc.MustMarshal(&ids)
+	store.Set([]byte(epochIdentifier), bz)
 }
 
 // DeleteFee removes a registered contract

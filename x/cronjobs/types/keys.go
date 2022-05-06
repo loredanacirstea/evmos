@@ -15,9 +15,11 @@ const (
 // prefix bytes for the fees persistent store
 const (
 	prefixCronjob = iota + 1
+	prefixCronjobIdentifier
 )
 
 // KVStore key prefixes
 var (
-	KeyPrefixCronjob = []byte{prefixCronjob}
+	KeyPrefixCronjob           = []byte{prefixCronjob}
+	KeyPrefixCronjobIdentifier = []byte{prefixCronjobIdentifier}
 )

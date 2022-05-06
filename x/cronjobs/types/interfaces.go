@@ -1,6 +1,8 @@
 package types
 
 import (
+	context "context"
+
 	"github.com/ethereum/go-ethereum/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,6 +35,6 @@ type EVMKeeper interface {
 
 // AbstractAccountKeeper defines the expected keeper interface
 type AbstractAccountKeeper interface {
-	RegisterAbstractAccount(ctx sdk.Context, msg *abstractacctypes.MsgRegisterAbstractAccount) (*abstractacctypes.MsgRegisterAccountResponse, error)
-	ForwardEthereumTx(ctx sdk.Context, msg *abstractacctypes.MsgForwardEthereumTx) (*abstractacctypes.MsgSubmitTxResponse, error)
+	RegisterAbstractAccount(goCtx context.Context, msg *abstractacctypes.MsgRegisterAbstractAccount) (*abstractacctypes.MsgRegisterAccountResponse, error)
+	ForwardEthereumTx(goCtx context.Context, msg *abstractacctypes.MsgForwardEthereumTx) (*abstractacctypes.MsgSubmitTxResponse, error)
 }
