@@ -1,0 +1,15 @@
+syntax = "proto3";
+package evmos.cronjobs.v1;
+
+option go_package = "github.com/tharsis/evmos/v4/x/cronjobs/types";
+
+message Cronjob {
+  string identifier = 1;
+  // transaction to be executed
+  string contract_address = 2;
+  string input = 3;
+  uint64 value = 4;
+  uint64 gas_limit = 5;
+  uint64 gas_price = 6;
+  string sender = 7;
+}
