@@ -3,12 +3,9 @@ package types
 import (
 	context "context"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/tharsis/ethermint/x/evm/statedb"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	// evmtypes "github.com/tharsis/ethermint/x/evm/types"
 	abstractacctypes "github.com/tharsis/ethermint/x/inter-tx/types"
 )
 
@@ -26,12 +23,12 @@ type BankKeeper interface {
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 }
 
-// EVMKeeper defines the expected EVM keeper interface used on erc20
-type EVMKeeper interface {
-	EVMConfig(ctx sdk.Context) (*evmtypes.EVMConfig, error)
-	GetParams(ctx sdk.Context) evmtypes.Params
-	GetAccountWithoutBalance(ctx sdk.Context, addr common.Address) *statedb.Account
-}
+// // EVMKeeper defines the expected EVM keeper interface used on erc20
+// type EVMKeeper interface {
+// 	EVMConfig(ctx sdk.Context) (*evmtypes.EVMConfig, error)
+// 	GetParams(ctx sdk.Context) evmtypes.Params
+// 	GetAccountWithoutBalance(ctx sdk.Context, addr common.Address) *statedb.Account
+// }
 
 // AbstractAccountKeeper defines the expected keeper interface
 type AbstractAccountKeeper interface {

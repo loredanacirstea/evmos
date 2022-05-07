@@ -105,6 +105,9 @@ import (
 
 	srvflags "github.com/tharsis/ethermint/server/flags"
 	ethermint "github.com/tharsis/ethermint/types"
+	"github.com/tharsis/ethermint/x/cronjobs"
+	cronjobskeeper "github.com/tharsis/ethermint/x/cronjobs/keeper"
+	cronjobstypes "github.com/tharsis/ethermint/x/cronjobs/types"
 	"github.com/tharsis/ethermint/x/evm"
 	evmrest "github.com/tharsis/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
@@ -126,9 +129,10 @@ import (
 	"github.com/tharsis/evmos/v4/x/claims"
 	claimskeeper "github.com/tharsis/evmos/v4/x/claims/keeper"
 	claimstypes "github.com/tharsis/evmos/v4/x/claims/types"
-	"github.com/tharsis/evmos/v4/x/cronjobs"
-	cronjobskeeper "github.com/tharsis/evmos/v4/x/cronjobs/keeper"
-	cronjobstypes "github.com/tharsis/evmos/v4/x/cronjobs/types"
+
+	// "github.com/tharsis/evmos/v4/x/cronjobs"
+	// cronjobskeeper "github.com/tharsis/evmos/v4/x/cronjobs/keeper"
+	// cronjobstypes "github.com/tharsis/evmos/v4/x/cronjobs/types"
 	"github.com/tharsis/evmos/v4/x/epochs"
 	epochskeeper "github.com/tharsis/evmos/v4/x/epochs/keeper"
 	epochstypes "github.com/tharsis/evmos/v4/x/epochs/types"
@@ -459,10 +463,11 @@ func NewEvmos(
 	// Create Ethermint keepers
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper, &app.InterTxKeeper,
+		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper, &app.InterTxKeeper, app.CronjobsKeeper,
 		tracer,
 	)
 	app.InterTxKeeper.EvmKeeper = app.EvmKeeper
+	app.CronjobsKeeper.EvmKeeper = app.EvmKeeper
 
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
@@ -535,6 +540,7 @@ func NewEvmos(
 			// insert epoch hooks receivers here
 			app.IncentivesKeeper.Hooks(),
 			app.InflationKeeper.Hooks(),
+			app.CronjobsKeeper.Hooks(),
 		),
 	)
 

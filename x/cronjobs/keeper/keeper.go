@@ -9,6 +9,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/tharsis/evmos/v4/x/cronjobs/types"
+	evmkeeper "github.com/tharsis/ethermint/x/evm/keeper"
 )
 
 // Keeper of this module maintains collections of fee information for contracts
@@ -20,7 +21,7 @@ type Keeper struct {
 
 	accountKeeper         types.AccountKeeper
 	bankKeeper            types.BankKeeper
-	evmKeeper             types.EVMKeeper
+	EvmKeeper             *evmkeeper.Keeper
 	abstractAccountKeeper types.AbstractAccountKeeper
 	feeCollectorName      string
 }
@@ -32,7 +33,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
-	evmKeeper types.EVMKeeper,
+	evmKeeper *evmkeeper.Keeper,
 	aak types.AbstractAccountKeeper,
 	feeCollector string,
 ) Keeper {
@@ -47,7 +48,7 @@ func NewKeeper(
 		paramstore:            ps,
 		accountKeeper:         ak,
 		bankKeeper:            bk,
-		evmKeeper:             evmKeeper,
+		EvmKeeper:             evmKeeper,
 		abstractAccountKeeper: aak,
 		feeCollectorName:      feeCollector,
 	}

@@ -3,6 +3,8 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	// sdk "github.com/cosmos/cosmos-sdk/types"
 	// "github.com/cosmos/cosmos-sdk/types/msgservice"
 )
@@ -16,12 +18,11 @@ var ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 // RegisterInterfaces register implementations
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	// registry.RegisterImplementations(
-	// 	(*sdk.Msg)(nil),
-	// 	&MsgRegisterDevFeeInfo{},
-	// 	&MsgCancelDevFeeInfo{},
-	// 	&MsgUpdateDevFeeInfo{},
-	// )
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgRegisterCronjob{},
+		&MsgCancelCronjob{},
+	)
 
-	// msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

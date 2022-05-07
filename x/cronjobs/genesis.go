@@ -13,7 +13,7 @@ func InitGenesis(
 	k keeper.Keeper,
 	data types.GenesisState,
 ) {
-	k.SetParams(ctx, data.Params)
+	// k.SetParams(ctx, data.Params)
 
 	for _, cronjob := range data.Cronjobs {
 		k.SetCronjob(ctx, cronjob.Identifier, cronjob)

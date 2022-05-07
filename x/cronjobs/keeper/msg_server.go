@@ -17,11 +17,11 @@ func (k Keeper) RegisterCronjob(
 	msg *types.MsgRegisterCronjob,
 ) (*types.MsgRegisterCronjobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.isEnabled(ctx) {
-		return nil, sdkerrors.Wrapf(types.ErrInternalCronjobs, "cronjobs module is not enabled")
-	}
+	// if !k.isEnabled(ctx) {
+	// 	return nil, sdkerrors.Wrapf(types.ErrInternalCronjobs, "cronjobs module is not enabled")
+	// }
 
-	id := GetId(msg.Cronjob.Sender, msg.Cronjob.Identifier)
+	id := k.GetId(msg.Cronjob.Sender, msg.Cronjob.Identifier)
 
 	if k.IsCronjobRegistered(ctx, id) {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "cronjob is already registered %s", id)
@@ -57,7 +57,7 @@ func (k Keeper) CancelCronjob(
 		return nil, sdkerrors.Wrapf(types.ErrInternalCronjobs, "cronjobs module is not enabled")
 	}
 
-	id := GetId(msg.Sender, msg.Identifier)
+	id := k.GetId(msg.Sender, msg.Identifier)
 
 	if !k.IsCronjobRegistered(ctx, id) {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "cronjob is not registered %s", id)
@@ -78,6 +78,6 @@ func (k Keeper) CancelCronjob(
 	return &types.MsgCancelCronjobResponse{}, nil
 }
 
-func GetId(sender string, identifier string) string {
+func (k Keeper) GetId(sender string, identifier string) string {
 	return sender + "_" + identifier
 }

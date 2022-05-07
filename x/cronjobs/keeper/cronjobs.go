@@ -66,7 +66,7 @@ func (k Keeper) GetCronjob(ctx sdk.Context, id string) (types.Cronjob, bool) {
 
 // GetCronjobIdentifiersByEpoch
 func (k Keeper) GetCronjobIdentifiersByEpoch(ctx sdk.Context, epochIdentifier string) types.CronjobsByEpochIdentifier {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjob)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixCronjobIdentifier)
 	bz := store.Get([]byte(epochIdentifier))
 	if len(bz) == 0 {
 		return types.CronjobsByEpochIdentifier{Identifiers: make([]string, 0)}
