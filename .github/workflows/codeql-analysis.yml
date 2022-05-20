@@ -20,6 +20,9 @@ on:
   schedule:
     - cron: '37 21 * * 4'
 
+env:
+  CODEQL_ACTION_RUN_MODE: "actions"
+
 jobs:
   analyze:
     name: Analyze
