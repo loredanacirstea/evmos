@@ -21,7 +21,7 @@ on:
     - cron: '37 21 * * 4'
 
 env:
-  CODEQL_ACTION_RUN_MODE: Action
+  CODEQL_ACTION_RUN_MODE: Runner
 
 jobs:
   analyze:
